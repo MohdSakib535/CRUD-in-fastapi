@@ -6,6 +6,7 @@ import database
 from sqlalchemy.orm import Session
 from typing import List
 from hashing import Hash
+import uvicorn
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=database.engine)
@@ -17,8 +18,8 @@ response_model: This parameter is used to define the Pydantic model that will be
 """
 
 @app.post("/createBlog/",status_code=status.HTTP_201_CREATED,response_model=schemas.ShowBlog,tags=["blog"])
-def read_root(request: schemas.Blog,db:Session = Depends(database.get_db)):
-    new_blog = models.Blog(title=request.title,body=request.body)
+def create_blog(request: schemas.Blog,db:Session = Depends(database.get_db)):
+    new_blog = models.Blog(title=request.title,body=request.body,user_id=1)
     db.add(new_blog)
     db.commit()
     db.refresh(new_blog)
@@ -107,3 +108,5 @@ def show_user(id:int,db:Session = Depends(database.get_db)):
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"User with id {id} is not available") 
     return user_data
+
+
