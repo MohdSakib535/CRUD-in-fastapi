@@ -1,17 +1,22 @@
 from fastapi import FastAPI,Depends,status,Response,HTTPException
 from pydantic import BaseModel
-app = FastAPI()
 import models
 import schemas
 import database
 from sqlalchemy.orm import Session
 from typing import List
+from hashing import Hash
+app = FastAPI()
 
 models.Base.metadata.create_all(bind=database.engine)
 
 
 
-@app.post("/createBlog/",status_code=status.HTTP_201_CREATED)
+"""
+response_model: This parameter is used to define the Pydantic model that will be used to format the output data. This will ensure that the output data is formatted according to the schema defined in the Pydantic model.
+"""
+
+@app.post("/createBlog/",status_code=status.HTTP_201_CREATED,response_model=schemas.ShowBlog,tags=["blog"])
 def read_root(request: schemas.Blog,db:Session = Depends(database.get_db)):
     new_blog = models.Blog(title=request.title,body=request.body)
     db.add(new_blog)
@@ -19,11 +24,11 @@ def read_root(request: schemas.Blog,db:Session = Depends(database.get_db)):
     db.refresh(new_blog)
     return new_blog
 
-@app.get("/blogs/")
+@app.get("/blogs/",status_code=status.HTTP_200_OK,response_model=List[schemas.ShowBlog],tags=["blog"])
 def all_blogs(db: Session = Depends(database.get_db)):
     return db.query(models.Blog).all()
 
-@app.get("/blogs/{id}",status_code=status.HTTP_200_OK)
+@app.get("/blogs/{id}",status_code=status.HTTP_200_OK,response_model=schemas.ShowBlog,tags=["blog"])
 def show_blog(id:int,response:Response,db: Session = Depends(database.get_db)):
     blog_data=db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog_data:
@@ -34,7 +39,7 @@ def show_blog(id:int,response:Response,db: Session = Depends(database.get_db)):
     return blog_data
 
 
-@app.put("/blogs/{id}",status_code=status.HTTP_202_ACCEPTED)
+@app.put("/blogs/{id}",status_code=status.HTTP_202_ACCEPTED,tags=["blog"])
 def update_blog(id:int,request:schemas.Blog,db:Session = Depends(database.get_db)):
     blog_data=db.query(models.Blog).filter(models.Blog.id == id)
     if not blog_data.first():
@@ -49,7 +54,7 @@ def update_blog(id:int,request:schemas.Blog,db:Session = Depends(database.get_db
     return {"message":f"Blog  with id {id} updated successfully"}
 
 
-@app.delete("/blogs/{id}",status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/blogs/{id}",status_code=status.HTTP_204_NO_CONTENT,tags=["blog"])
 def delete_blog(id:int,db: Session = Depends(database.get_db)):
     blog_data=db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog_data:
@@ -64,7 +69,7 @@ def delete_blog(id:int,db: Session = Depends(database.get_db)):
 synchronize_session parameter is relevant only for bulk deletion or bulk update operations, such as when using the query.delete() or query.update() methods.
 """
 
-@app.delete("/blogs/", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/blogs/", status_code=status.HTTP_204_NO_CONTENT,tags=["blog"])
 def bulk_delete_blogs(ids: List[int], db: Session = Depends(database.get_db)):
     # Bulk delete query
     rows_deleted = db.query(models.Blog).filter(models.Blog.id.in_(ids)).delete(synchronize_session=False)
@@ -78,3 +83,27 @@ def bulk_delete_blogs(ids: List[int], db: Session = Depends(database.get_db)):
         )
 
     return {"message": f"{rows_deleted} blog(s) deleted successfully"}
+
+
+
+@app.post("/createUser/",status_code=status.HTTP_201_CREATED,response_model=schemas.User,tags=["User"])
+def Create_user(request:schemas.User,db:Session = Depends(database.get_db)):
+    
+    new_user=models.User(name=request.name,email=request.email,password=Hash.bcrypt(request.password))
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+
+@app.get("/all_users",status_code=status.HTTP_200_OK,response_model=List[schemas.ShowUser],tags=["User"])
+def all_users(db:Session = Depends(database.get_db)):
+    return db.query(models.User).all()
+
+@app.get("/user/{id}",status_code=status.HTTP_200_OK,response_model=schemas.ShowUser,tags=["User"])
+def show_user(id:int,db:Session = Depends(database.get_db)):
+    user_data=db.query(models.User).filter(models.User.id == id).first()
+    if not user_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"User with id {id} is not available") 
+    return user_data

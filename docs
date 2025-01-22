@@ -1,3 +1,5 @@
+to run:uvicorn <module_name>:<app_instance> --reload
+
 **what is session synchronization**
 Session synchronization in the context of FastAPI and databases typically refers to managing and ensuring that database sessions are correctly created, used, and closed in a multi-threaded or asynchronous environment. Since databases often require sessions to maintain state and handle transactions, synchronization ensures that these sessions are handled properly during the request lifecycle
 
