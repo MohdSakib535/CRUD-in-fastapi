@@ -9,24 +9,26 @@ class Blog(BaseModel):
     title: str
     body: str
 
-    class Config():
-        from_attributes =True
 
 class ShowUser(BaseModel):
     id :int
     name: str
     email: str
-    blogs:List[Blog]=[]
 
     class Config():
         from_attributes = True
 
+    class Config():
+        from_attributes =True
 
 
 class ShowBlog(BaseModel):
     id: int
     title: str
     body: str
+    user_id : int|None
+    creator :ShowUser
+
     creator: Optional[ShowUser]
 
     class Config():

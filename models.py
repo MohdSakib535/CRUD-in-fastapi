@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from database import Base
 from sqlalchemy.orm import relationship
+from sqlmodel import SQLModel, Field,Relationship
+from typing import Optional, List
+from sqlalchemy.orm import relationship
 # from sqlmodel import SQLModel, Field,Relationship
 from typing import Optional, List
 
@@ -19,20 +22,7 @@ class User(Base):
     name = Column(String, nullable=False)   
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    blogs=relationship("Blog",back_populates="creator") 
+    blogs=relationship("Blog",back_populates="creator")
 
 
 
-# class Blog(SQLModel, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     title: str = Field(nullable=False)
-#     body: str = Field(nullable=False)
-#     user_id: int = Field(foreign_key="users.id")
-#     creator: "User" = Relationship(back_populates="blogs")
-
-# class User(SQLModel, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     name: str = Field(nullable=False)
-#     email: str = Field(nullable=False)
-#     password: str = Field(nullable=False)
-#     blogs: List[Blog] = Relationship(back_populates="creator")
