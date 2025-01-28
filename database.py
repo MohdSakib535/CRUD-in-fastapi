@@ -20,10 +20,10 @@ blog.db: The name of the SQLite database file.
 If this file doesn't exist, SQLite will automatically create it when the first connection is made.
 """
 # SQLite database URL
-DATABASE_URL = "sqlite:///./blog.db"
+DATABASE_URL = "postgresql://admin:admin@localhost:5432/fastapi-crud"
 
 # Create database engine
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(DATABASE_URL)
 
 
 
